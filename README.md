@@ -30,14 +30,9 @@
 打包工具：PyInstaller (转化为独立 EXE 运行)
 
 📁 目录结构
-Plaintext
 /
-├── app.py                  # Flask 后端核心逻辑与 API 接口
-├── 1.html                  # 前端 UI 与交互逻辑
-├── 启动小院.bat             # (交付用) 隐藏后台并以 App 模式开启网页
-├── 彻底关闭小院.bat         # (交付用) 一键清理后台进程
-├── farm_app.db             # SQLite 数据库文件 (运行时自动生成)
-└── README.md               # 项目说明文档
+<img width="1387" height="361" alt="image" src="https://github.com/user-attachments/assets/2a8c40be-bd3a-493e-a4ce-327cab1f3f9a" />
+
 🚀 快速开始
 本项目支持两种运行方式：开发者模式（源码运行）和 最终用户模式（一键运行）。
 
