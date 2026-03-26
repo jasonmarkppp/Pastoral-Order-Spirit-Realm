@@ -38,28 +38,20 @@
 
 方式一：源码运行 (推荐开发者)
 克隆本仓库到本地：
-
-Bash
-git clone https://github.com/你的用户名/你的仓库名.git
-cd 你的仓库名
+<img width="1313" height="254" alt="image" src="https://github.com/user-attachments/assets/c0d07056-556e-4599-b875-11e5b2880892" />
 安装依赖环境：
-
-Bash
-pip install flask
+<img width="1301" height="201" alt="image" src="https://github.com/user-attachments/assets/b7a1222c-33c9-4342-a5fa-a6d542b804ca" />
 启动服务器：
+<img width="1311" height="207" alt="image" src="https://github.com/user-attachments/assets/14d0dd29-6332-4ef5-a2f0-c6bf212dacac" />
 
-Bash
-python app.py
 打开浏览器，访问 http://127.0.0.1:5000 即可推开柴扉。
 
 注：首次运行时，系统会自动注入几条模拟的“历史拖延数据”，方便您立即体验 AI 智析的干预效果。
 
 方式二：打包为桌面软件 (交付给非技术用户)
 如果你想将其作为完整的 .exe 软件发给朋友，请执行以下命令打包：
+<img width="1376" height="247" alt="image" src="https://github.com/user-attachments/assets/f60813ec-cd86-4727-8f10-febf5ca806d4" />
 
-Bash
-pip install pyinstaller
-pyinstaller -F app.py
 打包完成后，将 dist/app.exe、1.html 以及两个 .bat 脚本放在同一个文件夹中，双击 启动小院.bat 即可沉浸式使用！
 
 💡 未来规划 (To-Do)
