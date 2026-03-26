@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>田园智序 · 灵境小院 | 山水田园工作台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            transition: background 0.6s ease;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 动态山水背景层 */
+        .nature-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .sky-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: background 0.8s ease;
+        }
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background: linear-gradient(180deg, rgba(80,100,60,0.4) 0%, rgba(60,80,40,0.6) 100%);
+            clip-path: polygon(0% 100%, 10% 60%, 18% 75%, 28% 45%, 38% 65%, 48% 40%, 58% 60%, 68% 35%, 78% 55%, 88% 40%, 100% 70%, 100% 100%);
+            backdrop-filter: blur(2px);
+        }
+        
+        .river {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 12%;
+            background: linear-gradient(90deg, #5dade2, #48c9b0, #5dade2);
+            opacity: 0.35;
+            filter: blur(3px);
+            z-index: 1;
+        }
+        
+        .waves-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 12%;
+            pointer-events: none;
+            z-index: 2;
+            overflow: visible;
+        }
+        .wave-layer {
+            position: absolute;
+            bottom: 0;
+            left: -10%;
+            width: 120%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(93, 173, 226, 0.5) 0%, rgba(72, 201, 176, 0.4) 100%);
+            border-radius: 50% 50% 45% 45%;
+            filter: blur(2px);
+            animation: sineWave 6s ease-in-out infinite, flowRight 12s linear infinite;
+            transform-origin: center bottom;
+        }
+        .wave-layer-2 {
+            background: radial-gradient(ellipse at center, rgba(72, 201, 176, 0.55) 0%, rgba(93, 173, 226, 0.45) 100%);
+            animation-duration: 8s, 14s;
+            animation-delay: -1s, -2s;
+            opacity: 0.7;
+            bottom: -2%;
+            left: -5%;
+            width: 110%;
+        }
+        .wave-layer-3 {
+            background: radial-gradient(ellipse at center, rgba(106, 176, 222, 0.5) 0%, rgba(72, 201, 176, 0.35) 100%);
+            animation-duration: 10s, 16s;
+            animation-delay: -3s, -4s;
+            opacity: 0.6;
+            bottom: -4%;
+            left: -15%;
+            width: 130%;
+        }
+        @keyframes sineWave {
+            0% { transform: translateY(0px) scaleX(1); border-radius: 50% 50% 45% 45%; }
+            25% { transform: translateY(-8px) scaleX(1.02); border-radius: 55% 48% 42% 52%; }
+            50% { transform: translateY(0px) scaleX(0.98); border-radius: 48% 52% 50% 50%; }
+            75% { transform: translateY(-5px) scaleX(1.01); border-radius: 52% 48% 48% 52%; }
+            100% { transform: translateY(0px) scaleX(1); border-radius: 50% 50% 45% 45%; }
+        }
+        @keyframes flowRight {
+            0% { left: -10%; }
+            100% { left: -5%; }
+        }
+        
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 250, 0.92);
+            border-radius: 100px;
+            filter: blur(18px);
+            pointer-events: none;
+            z-index: 3;
+            animation: floatCloud 40s linear infinite;
+        }
+        @keyframes floatCloud {
+            0% { transform: translateX(-15%); }
+            100% { transform: translateX(115%); }
+        }
+        
+        /* 夜晚模式隐藏云朵 */
+        body.night .cloud {
+            display: none;
+        }
+        
+        .bird {
+            position: absolute;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: flyBird 14s linear infinite;
+            z-index: 5;
+        }
+        @keyframes flyBird {
+            0% { transform: translateX(-10%) translateY(0px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(110%) translateY(-40px); opacity: 0; }
+        }
+        
+        .reward-toast {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f9b84a, #e67e22);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: toastFloat 2s ease-out forwards;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        @keyframes toastFloat {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+        }
+        
+        /* 剩余饲料显示 */
+        .reward-stock {
+            position: fixed;
+            top: 95px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(12px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #ffd966;
+            z-index: 151;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            pointer-events: none;
+            border: 1px solid #ffb347;
+        }
+        .reward-stock span { font-size: 1rem; margin: 0 2px; }
+
+        /* 动物提示区域 */
+        .farm-interact {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            z-index: 150;
+        }
+        .activity-card {
+            background: var(--day-card-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 1rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border: 2px solid var(--day-border);
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--day-text);
+            box-shadow: var(--day-card-shadow);
+            min-width: 220px;
+        }
+        .activity-card:hover { transform: translateY(-3px); background: var(--day-card-bg); }
+        .activity-icon { font-size: 2.5rem; }
+        .activity-info h4 { font-size: 1.1rem; margin-bottom: 0.4rem; font-weight: 700; }
+        .activity-info p { font-size: 0.95rem; opacity: 0.9; font-weight: 500; }
+        .progress-bar { width: 110px; height: 12px; background: #e9c891; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: #4caf50; width: 0%; transition: width 0.3s; }
+
+        body.night .wave-layer {
+            background: radial-gradient(ellipse at center, rgba(50, 120, 130, 0.55) 0%, rgba(40, 110, 100, 0.5) 100%);
+        }
+        body.night .river {
+            background: linear-gradient(90deg, #2c6e8f, #2a7f6e, #2c6e8f);
+            opacity: 0.3;
+        }
+
+        :root {
+            --day-sky: linear-gradient(180deg, #c8e8ff 0%, #f5e6d3 100%);
+            --day-card-bg: rgba(255, 252, 240, 0.92);
+            --day-text: #1e2a1a;
+            --day-text-bright: #2d3e24;
+            --day-border: #d4a373;
+            --day-shadow: rgba(100, 60, 20, 0.2);
+            --day-input-bg: #fffff0;
+            --day-card-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* 夜晚模式 - 字体改为深色/高对比度 */
+        body.night {
+            --day-sky: linear-gradient(180deg, #0f2a3a 0%, #1a3a2a 100%);
+            --day-card-bg: #1e2a2e;
+            --day-text: #f5efda;
+            --day-text-bright: #ffecb3;
+            --day-border: #c28a4a;
+            --day-shadow: rgba(0, 0, 0, 0.4);
+            --day-input-bg: #2d3e32;
+            --day-card-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        /* 确保这些文字在夜晚模式下清晰可见 - 改为黑色 */
+body.night .todo-row,
+body.night .habit-row,
+body.night .note-card-item,
+body.night .toolbox-card,
+body.night .focus-record,
+body.night .quote-text,
+body.night .timer-number-large {
+    color: #000000 !important;
+}
+        /* 确保所有文字在夜晚模式下清晰可见 */
+        body.night .glass-card,
+        body.night .return-core,
+        body.night .module-nav h2,
+        body.night .activity-card,
+        body.night .companion-text,
+        body.night .reward-stock {
+            color: #f0e6c0 !important;
+        }
+        
+        body.night .todo-row input,
+        body.night .habit-row input,
+        body.night .inline-input-group input {
+            color: #f0e6c0;
+            background: #3a4d3a;
+            border-color: #c28a4a;
+        }
+        
+        body.night .todo-row .todo-text.completed {
+            color: #a0a07a !important;
+        }
+        
+        body.night .return-core,
+        body.night .close-panel {
+            background: #2d3e32;
+            color: #ffecb3;
+            border-color: #c28a4a;
+        }
+        
+        body.night .time-btn {
+            background: #2d3e32;
+            color: #ffecb3;
+            border-color: #c28a4a;
+        }
+        
+        body.night .time-btn:hover {
+            background: #c28a4a;
+            color: #1e2a2e;
+        }
+        
+        body.night .btn-inline {
+            background: #c28a4a;
+            color: #1e2a2e;
+        }
+        
+        body.night .btn-inline:hover {
+            background: #d49c5a;
+        }
+        
+        body.night .checkin-modern {
+            background: #c28a4a;
+            color: #1e2a2e;
+        }
+        
+        body.night .checkin-modern:hover:not(.disabled) {
+            background: #d49c5a;
+        }
+        
+        body.night .primary-btn {
+            background: #c28a4a;
+            color: #1e2a2e;
+        }
+        
+        body.night .primary-btn:hover {
+            background: #d49c5a;
+        }
+        
+        body.night .delete-todo-btn,
+        body.night .delete-habit {
+            color: #ffaa66;
+        }
+        
+        body.night .habit-streak-badge {
+            background: #4a6a3a;
+            color: #ffecb3;
+        }
+
+        body {
+            background: var(--day-sky);
+            color: var(--day-text);
+        }
+
+        .sun-moon {
+            position: fixed;
+            top: 85px;
+            right: 25px;
+            font-size: 2.8rem;
+            pointer-events: none;
+            z-index: 55;
+        }
+        .rainbow {
+            position: fixed;
+            top: 90px;
+            right: 95px;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 54;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .star {
+            position: absolute;
+            color: #FFE484;
+            font-size: 1rem;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle { 0%,100%{ opacity: 0.2; } 50%{ opacity: 1; } }
+
+        .fullscreen-timer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #2c5a2a, #1a3f1a);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s;
+        }
+        .fullscreen-timer.active { opacity: 1; visibility: visible; }
+        .fullscreen-timer .timer-number { font-size: 15vw; font-weight: 800; color: #FFE5B4; text-shadow: 0 0 20px #ffaa33; }
+        .fullscreen-timer .timer-pet { font-size: 4rem; margin-top: 1rem; animation: bounce 1s infinite; }
+        @keyframes bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-15px); } }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #c7e2b0, #b8d4a0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .inspire-quote-outer {
+            max-width: 550px;
+            width: 90%;
+            margin-bottom: 1rem;
+            text-align: center;
+            background: rgba(255, 248, 225, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 3rem;
+            padding: 1.2rem 1.8rem;
+            border: 1px solid #d4a373;
+            font-style: italic;
+            font-weight: 600;
+            color: #6b4c2c;
+            font-size: 1.4rem;
+        }
+        .login-card {
+            background: rgba(255, 252, 235, 0.96);
+            border-radius: 3rem;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            border: 2px solid #d4a373;
+        }
+        .login-card h2 { color: #5a3a1a !important; }
+        .welcome-pets span { font-size: 3rem; margin: 0 0.3rem; animation: wave 1.5s infinite; display: inline-block; }
+        @keyframes wave { 0%,100%{ transform: rotate(0); } 25%{ transform: rotate(12deg); } 75%{ transform: rotate(-8deg); } }
+        .input-group input { width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 2px solid #d4a373; border-radius: 2rem; background: #fffef7; color: #2d2b1f; }
+        .login-btn { background: #b97f44; color: white; border: none; padding: 0.8rem; border-radius: 2rem; width: 100%; font-weight: bold; cursor: pointer; }
+
+        .app-container { display: none; min-height: 100vh; position: relative; z-index: 10; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 2rem;
+            background: rgba(100, 80, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border-bottom: 3px solid #f4c542;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .logo-area { display: flex; align-items: center; gap: 0.8rem; }
+        .logo-pet { font-size: 2rem; }
+        .logo-area h1 { font-size: 1.3rem; color: #fff3e0; text-shadow: 2px 2px 0 #5a3a1a; }
+        .datetime-display {
+            background: rgba(255, 248, 220, 0.9);
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            color: #5a3a1a;
+            font-size: 0.85rem;
+        }
+        .user-actions { display: flex; gap: 1rem; align-items: center; }
+        .logout-btn { background: rgba(255, 248, 220, 0.9); border: none; padding: 0.4rem 1rem; border-radius: 2rem; cursor: pointer; color: #5a3a1a; }
+
+        .wheel-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            padding: 2rem;
+        }
+        .wheel-nav {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto;
+        }
+        .wheel-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffefc0, #e6c99c);
+            box-shadow: 0 0 0 8px rgba(255,225,160,0.8), 0 20px 30px var(--day-shadow);
+        }
+        .ai-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 170px;
+            height: 170px;
+            background: linear-gradient(135deg, #ffd89b, #f9b84a);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            border: 3px solid #ffdd99;
+            z-index: 10;
+        }
+        .ai-core:hover { transform: translate(-50%, -50%) scale(1.03); }
+        .ai-core .ai-icon { font-size: 3rem; animation: gentleFloat 2s infinite; }
+        .ai-core .ai-text { font-size: 0.9rem; font-weight: 800; color: #3d2a1a; background: rgba(255,255,200,0.7); padding: 0.2rem 0.8rem; border-radius: 2rem; margin-top: 5px; }
+        @keyframes gentleFloat { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-5px); } }
+        
+        .func-btn {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: var(--day-card-bg);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid #ffb347;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: var(--day-card-shadow);
+            color: var(--day-text);
+            backdrop-filter: blur(8px);
+        }
+        .func-btn:hover { transform: scale(1.08) translateY(-6px); background: #ffe3b5; }
+        .func-icon { font-size: 2rem; }
+        .func-btn:hover .func-icon { transform: scale(1.1) rotate(5deg); }
+        .func-label { font-size: 0.75rem; font-weight: 700; margin-top: 4px; }
+
+        .companion-area {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: var(--day-card-bg);
+            border-radius: 2rem;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border: 3px solid #ffb347;
+            z-index: 150;
+            cursor: pointer;
+            box-shadow: var(--day-card-shadow);
+            backdrop-filter: blur(8px);
+            min-width: 200px;
+        }
+        .companion-emoji { font-size: 3rem; animation: bounce 1.5s infinite; transition: transform 0.2s; }
+        .companion-text { font-size: 1rem; max-width: 180px; font-weight: 600; line-height: 1.4; }
+
+        /* 全屏模块 */
+        .fullscreen-module {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--day-card-bg);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            overflow-y: auto;
+        }
+        .fullscreen-module.active { transform: translateX(0); }
+        
+        .module-dashboard { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        .module-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid var(--day-border); padding-bottom: 1rem; }
+        .module-nav h2 { font-size: 1.9rem; font-weight: 800; color: var(--day-text-bright); }
+        .return-core { background: var(--day-card-bg); border: 1px solid var(--day-border); padding: 0.6rem 1.5rem; border-radius: 40px; cursor: pointer; color: var(--day-text); transition: 0.2s; }
+        .return-core:hover { background: rgba(255,180,70,0.2); transform: scale(1.02); }
+        .glass-card { background: var(--day-card-bg); border-radius: 2rem; padding: 1.8rem; border: 1px solid var(--day-border); }
+        
+        .todo-row, .habit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.75rem;
+            background: rgba(255, 250, 225, 0.9);
+            border-radius: 1.2rem;
+            border: 1px solid var(--day-border);
+            color: #2c3a1f;
+        }
+        button.primary-btn { background: #b97f44; border: none; padding: 0.5rem 1.6rem; border-radius: 2rem; color: white; cursor: pointer; transition: 0.2s; }
+        button.primary-btn:hover { transform: scale(1.02); background: #9b6536; }
+        .habit-streak-badge { background: #f5e6a0; padding: 0.2rem 0.7rem; border-radius: 2rem; font-size: 0.7rem; color: #5a3a1a; margin-left: 8px; }
+        .checkin-modern { background: #b97f44; border: none; padding: 0.4rem 1rem; border-radius: 2rem; color: white; cursor: pointer; transition: 0.2s; }
+        .checkin-modern:hover:not(.disabled) { transform: scale(1.02); background: #9b6536; }
+        .checkin-modern.disabled { background: #a0a080; cursor: not-allowed; }
+        .inline-input-group { display: flex; gap: 12px; margin-top: 1.5rem; }
+        .inline-input-group input { flex: 1; padding: 0.7rem 1rem; border-radius: 2rem; border: 2px solid var(--day-border); background: var(--day-input-bg); color: var(--day-text); }
+        .notes-list { display: flex; flex-direction: column; gap: 1rem; }
+        .note-card-item {
+            background: rgba(255, 250, 225, 0.9);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            border: 1px solid var(--day-border);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .note-card-item:hover { transform: translateX(4px); border-color: #ffb347; }
+        .add-note-fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #f4a261;
+            color: white;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 150;
+            transition: 0.2s;
+        }
+        .add-note-fab:hover { transform: scale(1.08); background: #e67e22; }
+        
+        .toolbox-layout { display: flex; flex-direction: column; gap: 1.5rem; }
+        .toolbox-card {
+            background: rgba(255, 250, 225, 0.9);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid var(--day-border);
+        }
+        .timer-number-large { font-size: 2.8rem; font-weight: 800; text-align: center; margin: 0.8rem 0; color: #f59e0b; }
+        .time-btn { background: #ffe0b5; border: 1px solid #d4a373; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; margin: 0.2rem; transition: 0.2s; }
+        .time-btn:hover { background: #ffb347; color: white; transform: scale(1.02); }
+        .btn-inline { background: #b97f44; border: none; padding: 0.5rem 1.2rem; border-radius: 2rem; color: white; cursor: pointer; transition: 0.2s; }
+        .btn-inline:hover { transform: scale(1.02); background: #9b6536; }
+        .quote-text { background: rgba(255, 245, 215, 0.8); padding: 0.8rem; border-radius: 1rem; margin: 0.5rem 0; text-align: center; }
+        .sticky-note-area textarea { width: 100%; border-radius: 1rem; padding: 0.8rem; border: 2px solid #ffb347; background: #fffef0; min-height: 100px; }
+        .focus-record { background: rgba(255, 245, 215, 0.8); border-radius: 1.2rem; padding: 1rem; margin-top: 1rem; }
+        .floating-card {
+            position: fixed;
+            background: var(--day-card-bg);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            border: 2px solid #ffb347;
+            z-index: 1000;
+            width: 260px;
+            box-shadow: 0 10px 25px var(--day-shadow);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .floating-card:hover { transform: scale(1.02); }
+        .floating-card,
+        .floating-card * {
+            cursor: pointer;
+        }
+        .note-detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .note-detail-card {
+            background: var(--day-card-bg);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 2rem;
+            padding: 1.5rem;
+        }
+        .detail-title-input { font-size: 1.5rem; font-weight: bold; width: 100%; border: none; border-bottom: 2px solid var(--day-border); background: transparent; color: var(--day-text); outline: none; }
+        .detail-content-textarea { width: 100%; min-height: 150px; border: 1px solid var(--day-border); border-radius: 1rem; padding: 0.8rem; margin: 1rem 0; background: var(--day-input-bg); color: var(--day-text); resize: vertical; }
+        .detail-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
+        .detail-actions button { padding: 0.5rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .detail-actions button:hover { transform: translateY(-2px); }
+        
+        @media (max-width: 680px) {
+            .wheel-nav { width: 320px; height: 320px; }
+            .func-btn { width: 70px; height: 70px; }
+            .ai-core { width: 110px; height: 110px; }
+            .companion-area { padding: 0.6rem 1rem; min-width: 150px; }
+            .companion-emoji { font-size: 2rem; }
+            .companion-text { font-size: 0.8rem; }
+            .activity-card { padding: 0.7rem 1.2rem; min-width: 170px; }
+            .activity-icon { font-size: 1.8rem; }
+            .reward-stock { top: 85px; left: 10px; font-size: 0.7rem; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="nature-bg">
+    <div class="sky-gradient" id="skyGradient"></div>
+    <div class="mountains"></div>
+    <div class="river"></div>
+    <div class="waves-container">
+        <div class="wave-layer"></div>
+        <div class="wave-layer wave-layer-2"></div>
+        <div class="wave-layer wave-layer-3"></div>
+    </div>
+</div>
+
+<div id="fullscreenTimer" class="fullscreen-timer">
+    <button class="timer-close" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.5); border:none; width:40px; height:40px; border-radius:50%; color:white; cursor:pointer;">✕</button>
+    <div class="timer-number" id="fullscreenTimerDisplay">25:00</div>
+    <div class="timer-pet">🐓🌾</div>
+    <div class="timer-quote" id="fullscreenTimerQuote">“田间的专注，收获的季节”</div>
+</div>
+
+<div id="loginScreen" class="login-container">
+    <div class="inspire-quote-outer" id="inspireQuoteOuter">✨ 加载中...</div>
+    <div class="login-card">
+        <div class="welcome-pets"><span>🐓</span><span>🐑</span><span>🐰</span><span>🌻</span></div>
+        <h2>🌾 田园智序 · 灵境小院</h2>
+        <p style="color:#8b5a2b;">完成任务获得随机奖励，喂给小动物们吧</p>
+        <div class="input-group"><input type="text" id="loginUsername" placeholder="小农夫" value="田园小主"></div>
+        <div class="input-group"><input type="password" id="loginPassword" placeholder="密码" value="farm"></div>
+        <button class="login-btn" id="doLoginBtn">🐔 推开柴扉 🐔</button>
+    </div>
+</div>
+
+<div id="appDashboard" class="app-container">
+    <div class="top-bar">
+        <div class="logo-area"><span class="logo-pet">🏡</span><h1>田园智序 · 灵境小院</h1></div>
+        <div class="datetime-display" id="datetimeDisplay">🌞 加载中...</div>
+        <div class="user-actions"><span id="userNameDisplay"></span><button class="logout-btn" id="logoutBtn">离开小院</button></div>
+    </div>
+    <div class="wheel-area">
+        <div class="wheel-nav">
+            <div class="wheel-bg"></div>
+            <div class="func-btn" data-module="todo" style="top: 5%; left: 50%; transform: translate(-50%, 0);"><div class="func-icon">📋</div><div class="func-label">待办</div></div>
+            <div class="func-btn" data-module="notes" style="top: 50%; right: 3%; transform: translate(0, -50%);"><div class="func-icon">📝</div><div class="func-label">备忘录</div></div>
+            <div class="func-btn" data-module="habits" style="bottom: 5%; left: 50%; transform: translate(-50%, 0);"><div class="func-icon">🔥</div><div class="func-label">习惯</div></div>
+            <div class="func-btn" data-module="toolbox" style="top: 50%; left: 3%; transform: translate(0, -50%);"><div class="func-icon">🧰</div><div class="func-label">工具箱</div></div>
+            <div class="ai-core" id="aiCoreBtn"><div class="ai-icon">🧑‍🌾✨</div><div class="ai-text">AI 智析</div></div>
+        </div>
+    </div>
+
+    <div class="farm-interact">
+        <div class="activity-card" id="waterFlowerBtn"><div class="activity-icon">💧🌻</div><div class="activity-info"><h4>浇灌向日葵</h4><p id="flowerStatus">花儿需要关爱</p><div class="progress-bar"><div class="progress-fill" id="flowerProgress"></div></div></div></div>
+        <div class="activity-card" id="feedSheepBtn"><div class="activity-icon">🌿🐑</div><div class="activity-info"><h4>喂小羊吃草</h4><p id="sheepStatus">小羊饿了</p><div class="progress-bar"><div class="progress-fill" id="sheepFullness"></div></div></div></div>
+        <div class="activity-card" id="feedRabbitBtn"><div class="activity-icon">🥕🐰</div><div class="activity-info"><h4>喂小兔胡萝卜</h4><p id="rabbitStatus">兔子想吃胡萝卜</p><div class="progress-bar"><div class="progress-fill" id="rabbitFullness"></div></div></div></div>
+    </div>
+
+    <div class="companion-area" id="companionBox">
+        <div class="companion-emoji" id="petEmoji">🐑</div>
+        <div class="companion-text" id="petMessage">咩~今天也是元气满满的一天！</div>
+    </div>
+    
+    <div class="reward-stock" id="rewardStock">
+        <span>💧</span> 水 x <span id="waterCount">0</span>
+        <span>🥕</span> 胡萝卜 x <span id="carrotCount">0</span>
+        <span>🌿</span> 草 x <span id="grassCount">0</span>
+    </div>
+    
+    <div class="sun-moon" id="sunMoonIcon">🌞</div>
+    <div class="rainbow" id="rainbowIcon">🌈</div>
+    <div class="stars-container" id="starsContainer"></div>
+</div>
+
+<div id="todoPanel" class="fullscreen-module"><div class="module-dashboard"><div class="module-nav"><h2>✅ 待办清单</h2><button class="return-core close-panel">← 返回核心</button></div><div class="glass-card"><div id="todoListRender"></div><div class="inline-input-group"><input type="text" id="todoInputField" placeholder="写下新任务..."><button class="primary-btn" id="addTodoAction">添加</button></div></div></div></div>
+<div id="notePanel" class="fullscreen-module"><div class="module-dashboard"><div class="module-nav"><h2>📝 备忘录</h2><button class="return-core close-panel">← 返回核心</button></div><div class="glass-card"><div id="noteListRender" class="notes-list"></div></div></div><button id="fabAddNote" class="add-note-fab">+</button></div>
+<div id="habitPanel" class="fullscreen-module"><div class="module-dashboard"><div class="module-nav"><h2>🔥 习惯坚持</h2><button class="return-core close-panel">← 返回核心</button></div><div class="glass-card"><div id="habitListRender"></div><div class="inline-input-group"><input type="text" id="habitInputField" placeholder="新习惯 (例: 冥想)"><button class="primary-btn" id="addHabitAction">+ 添加</button></div><div id="habitExtraStats" style="margin-top: 12px; text-align: center;"></div></div></div></div>
+<div id="toolboxPanel" class="fullscreen-module"><div class="module-dashboard"><div class="module-nav"><h2>🧰 实用工具箱</h2><button class="return-core close-panel">← 返回核心</button></div><div class="glass-card" id="toolboxContainer"></div></div></div>
+<div id="aiPanel" class="fullscreen-module"><div class="module-dashboard"><div class="module-nav"><h2>🧠 AI 智析</h2><button class="return-core close-panel">← 返回核心</button></div><div class="glass-card"><div id="aiAdviceBlock"></div><div id="aiStatsBlock"></div></div></div></div>
+<div id="noteDetailModal" class="note-detail-overlay"><div class="note-detail-card"><input type="text" id="detailTitle" class="detail-title-input" placeholder="标题"><div class="detail-meta"><span id="detailTime"></span><span id="detailWordCount">0字</span></div><textarea id="detailContent" class="detail-content-textarea" placeholder="在这里写下你的想法..."></textarea><div class="detail-actions"><button id="deleteNoteBtn" style="background:#fee2e2; color:#dc2626;">删除</button><button id="cancelDetailBtn" style="background:#e2e8f0;">取消</button><button id="saveDetailBtn" style="background:#b97f44; color:white;">保存</button></div></div></div>
+
+<script>
+    // 全局定时器句柄
+    let decayInterval = null;
+
+    // 创建云朵和小鸟
+    function createClouds() {
+        for(let i = 0; i < 8; i++) {
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud';
+            const size = 100 + Math.random() * 120;
+            cloud.style.width = size + 'px';
+            cloud.style.height = (size * 0.45) + 'px';
+            cloud.style.top = Math.random() * 35 + 5 + '%';
+            cloud.style.left = Math.random() * 100 + '%';
+            cloud.style.animationDuration = 45 + Math.random() * 35 + 's';
+            cloud.style.animationDelay = Math.random() * 20 + 's';
+            cloud.style.opacity = 0.75 + Math.random() * 0.2;
+            cloud.style.background = 'radial-gradient(ellipse at center, rgba(255,255,245,0.95), rgba(245,245,235,0.85))';
+            document.querySelector('.nature-bg').appendChild(cloud);
+        }
+    }
+    function createBirds() {
+        const birds = ['🐦', '🕊️', '🐦', '🕊️', '🐧'];
+        for(let i = 0; i < 10; i++) {
+            const bird = document.createElement('div');
+            bird.className = 'bird';
+            bird.innerHTML = birds[Math.floor(Math.random() * birds.length)];
+            bird.style.top = Math.random() * 45 + 10 + '%';
+            bird.style.left = '-10%';
+            bird.style.animationDuration = 12 + Math.random() * 12 + 's';
+            bird.style.animationDelay = Math.random() * 18 + 's';
+            bird.style.fontSize = 1.3 + Math.random() * 1 + 'rem';
+            document.querySelector('.nature-bg').appendChild(bird);
+        }
+    }
+    createClouds();
+    createBirds();
+    
+    // 资源库存
+    let waterCount = localStorage.getItem('waterCount') ? parseInt(localStorage.getItem('waterCount')) : 4;
+    let carrotCount = localStorage.getItem('carrotCount') ? parseInt(localStorage.getItem('carrotCount')) : 3;
+    let grassCount = localStorage.getItem('grassCount') ? parseInt(localStorage.getItem('grassCount')) : 4;
+    
+    function updateRewardDisplay() {
+        document.getElementById('waterCount').innerText = waterCount;
+        document.getElementById('carrotCount').innerText = carrotCount;
+        document.getElementById('grassCount').innerText = grassCount;
+        localStorage.setItem('waterCount', waterCount);
+        localStorage.setItem('carrotCount', carrotCount);
+        localStorage.setItem('grassCount', grassCount);
+    }
+    
+    function showRewardToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'reward-toast';
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+    
+    // 农场状态
+    let flowerHydration = localStorage.getItem('flowerHydration') ? parseInt(localStorage.getItem('flowerHydration')) : 65;
+    let sheepFullness = localStorage.getItem('sheepFullness') ? parseInt(localStorage.getItem('sheepFullness')) : 70;
+    let rabbitFullness = localStorage.getItem('rabbitFullness') ? parseInt(localStorage.getItem('rabbitFullness')) : 60;
+    
+    function updateFarmUI() {
+        document.getElementById('flowerProgress').style.width = flowerHydration + '%';
+        document.getElementById('sheepFullness').style.width = sheepFullness + '%';
+        document.getElementById('rabbitFullness').style.width = rabbitFullness + '%';
+        
+        if(flowerHydration >= 100) document.getElementById('flowerStatus').innerHTML = "🌻 花儿饱饱的！";
+        else if(flowerHydration > 70) document.getElementById('flowerStatus').innerHTML = "🌻 花儿很满足";
+        else if(flowerHydration > 30) document.getElementById('flowerStatus').innerHTML = "🌱 需要更多水";
+        else document.getElementById('flowerStatus').innerHTML = "🥀 快浇水！";
+        
+        if(sheepFullness >= 100) document.getElementById('sheepStatus').innerHTML = "🐑 小羊吃饱了！";
+        else if(sheepFullness > 70) document.getElementById('sheepStatus').innerHTML = "🐑 小羊很满足";
+        else if(sheepFullness > 30) document.getElementById('sheepStatus').innerHTML = "🐏 有点饿";
+        else document.getElementById('sheepStatus').innerHTML = "🍂 快喂草！";
+        
+        if(rabbitFullness >= 100) document.getElementById('rabbitStatus').innerHTML = "🐰 兔子饱饱的！";
+        else if(rabbitFullness > 70) document.getElementById('rabbitStatus').innerHTML = "🐰 兔子很开心";
+        else if(rabbitFullness > 30) document.getElementById('rabbitStatus').innerHTML = "🥕 想吃胡萝卜";
+        else document.getElementById('rabbitStatus').innerHTML = "🥀 兔子饿坏了";
+        
+        localStorage.setItem('flowerHydration', flowerHydration);
+        localStorage.setItem('sheepFullness', sheepFullness);
+        localStorage.setItem('rabbitFullness', rabbitFullness);
+    }
+    
+    // 每小时消耗
+    function hourlyDecay() {
+        flowerHydration = Math.max(0, flowerHydration - 25);
+        sheepFullness = Math.max(0, sheepFullness - 25);
+        rabbitFullness = Math.max(0, rabbitFullness - 25);
+        updateFarmUI();
+    }
+    
+    // 获取随机奖励
+    function getRandomReward() {
+        const rewards = [
+            { type: 'water', name: '💧 水', emoji: '💧', add: () => waterCount++ },
+            { type: 'carrot', name: '🥕 胡萝卜', emoji: '🥕', add: () => carrotCount++ },
+            { type: 'grass', name: '🌿 草', emoji: '🌿', add: () => grassCount++ }
+        ];
+        const reward = rewards[Math.floor(Math.random() * rewards.length)];
+        reward.add();
+        updateRewardDisplay();
+        return reward;
+    }
+    
+    // 喂食功能
+    function waterFlower() { 
+        if(flowerHydration >= 100) {
+            updatePetMessage("🌻 花儿已经喝饱了，不需要再浇水啦！");
+            showRewardToast("🌻 花儿已经饱饱的啦！");
+            return;
+        }
+        if(waterCount > 0) {
+            waterCount--;
+            flowerHydration = Math.min(100, flowerHydration + 20);
+            updateFarmUI();
+            updateRewardDisplay();
+            updatePetMessage("💧 你浇了水，向日葵随风摇摆~");
+            showRewardToast("💧 消耗1份水，花儿更美丽了！");
+        } else {
+            updatePetMessage("💧 水不够了！完成任务可获得水奖励~");
+            showRewardToast("💧 水资源不足！完成任务获取吧");
+        }
+    }
+    
+    function feedSheep() {
+        if(sheepFullness >= 100) {
+            updatePetMessage("🐑 小羊已经吃饱了，不要再喂啦！");
+            showRewardToast("🐑 小羊已经饱饱的了！");
+            return;
+        }
+        if(grassCount > 0) {
+            grassCount--;
+            sheepFullness = Math.min(100, sheepFullness + 28);
+            updateFarmUI();
+            updateRewardDisplay();
+            updatePetMessage("🌿 小羊开心地吃着鲜草，蹭蹭你的手~");
+            showRewardToast("🌿 消耗1份草料，小羊吃饱啦！");
+        } else {
+            updatePetMessage("🌿 草料不够了！完成任务可获得草料奖励~");
+            showRewardToast("🌿 草料不足！完成任务获取吧");
+        }
+    }
+    
+    function feedRabbit() {
+        if(rabbitFullness >= 100) {
+            updatePetMessage("🐰 小兔子已经吃饱了，不要再喂啦！");
+            showRewardToast("🐰 小兔子已经饱饱的了！");
+            return;
+        }
+        if(carrotCount > 0) {
+            carrotCount--;
+            rabbitFullness = Math.min(100, rabbitFullness + 25);
+            updateFarmUI();
+            updateRewardDisplay();
+            updatePetMessage("🥕 小兔子抱着胡萝卜，开心地摇耳朵~");
+            showRewardToast("🥕 消耗1根胡萝卜，兔子蹦蹦跳！");
+        } else {
+            updatePetMessage("🥕 胡萝卜不够了！完成任务可获得胡萝卜奖励~");
+            showRewardToast("🥕 胡萝卜不足！完成任务获取吧");
+        }
+    }
+    
+    function getAnimalEmojiFromText(text) {
+        if (!text) return null;
+        const animalEmojis = ['🐑', '🐏', '🐰', '🐇', '🐓', '🐔', '🐕', '🐶', '🐱', '🐈', '🐮', '🐄', '🐖', '🐷', '🦆', '🐦', '🕊️', '🐧'];
+        for (let emoji of animalEmojis) {
+            if (text.includes(emoji)) return emoji;
+        }
+        if (/(小羊|羊|咩)/.test(text)) return '🐑';
+        if (/(兔子|小兔|兔|蹦蹦)/.test(text)) return '🐰';
+        if (/(小鸡|鸡|咯咯|🐓)/.test(text)) return '🐓';
+        if (/(狗狗|狗|汪汪)/.test(text)) return '🐕';
+        if (/(猫咪|猫|喵)/.test(text)) return '🐱';
+        if (/(牛|哞)/.test(text)) return '🐮';
+        if (/(鸭子|鸭|嘎嘎)/.test(text)) return '🦆';
+        return null;
+    }
+    
+    const petMessages = ["🐑 咩~继续加油呀！", "🐰 蹦蹦跳跳来陪你工作~", "🐓 咯咯哒！专注最棒！", "🐕 汪汪！主人真努力！"];
+    function updatePetMessage(msg) {
+        const msgDiv = document.getElementById('petMessage');
+        const emojiSpan = document.getElementById('petEmoji');
+        if(msgDiv) { 
+            msgDiv.innerText = msg; 
+            const matchedEmoji = getAnimalEmojiFromText(msg);
+            if (matchedEmoji && emojiSpan) {
+                emojiSpan.innerText = matchedEmoji;
+            }
+            setTimeout(() => { 
+                if(msgDiv.innerText === msg) {
+                    let idx = Math.floor(Math.random() * petMessages.length);
+                    let randomMsg = petMessages[idx];
+                    msgDiv.innerText = randomMsg;
+                    const newMatch = getAnimalEmojiFromText(randomMsg);
+                    if (newMatch && emojiSpan) emojiSpan.innerText = newMatch;
+                }
+            }, 4000);
+        }
+    }
+    
+    // 番茄钟功能
+    let focusRecords = []; const FOCUS_RECORDS_KEY = 'focus_records'; const CURRENT_QUOTE_KEY = 'current_quote';
+    const quotesLibrary = ["今日事今日毕", "习惯是自我复利", "备忘录藏着灵感", "AI 助你成长", "坚持打卡，蜕变", "专注是成功的第一步"];
+    function getRandomQuoteLib() { return quotesLibrary[Math.floor(Math.random() * quotesLibrary.length)]; }
+    function getCurrentQuote() { return localStorage.getItem(CURRENT_QUOTE_KEY) || "田间的专注，收获的季节"; }
+    function saveCurrentQuote(quote) { localStorage.setItem(CURRENT_QUOTE_KEY, quote); }
+    
+    let fullscreenTimerInterval = null, fullscreenSecondsLeft = 25 * 60, fullscreenStartSeconds = 25 * 60, isFullscreenTimerActive = false;
+    const fullscreenOverlay = document.getElementById('fullscreenTimer'), fullscreenDisplay = document.getElementById('fullscreenTimerDisplay');
+    function formatTime(s) { const mins = Math.floor(s / 60), secs = s % 60; return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`; }
+    function addFocusRecord(durationSeconds) {
+        const minutes = Math.floor(durationSeconds / 60);
+        const durationText = minutes > 0 ? `${minutes}分钟` : `${durationSeconds}秒`;
+        focusRecords.unshift({ id: Date.now(), startTime: new Date().toLocaleString(), durationSeconds, durationText });
+        if (focusRecords.length > 15) focusRecords.pop();
+        localStorage.setItem(FOCUS_RECORDS_KEY, JSON.stringify(focusRecords));
+        if(window.renderToolboxUI) window.renderToolboxUI();
+        updatePetMessage(`🌾 专注了${durationText}！获得随机奖励~`);
+        const reward = getRandomReward();
+        flowerHydration = Math.min(100, flowerHydration + 3);
+        sheepFullness = Math.min(100, sheepFullness + 3);
+        rabbitFullness = Math.min(100, rabbitFullness + 3);
+        updateFarmUI();
+        showRewardToast(`🌾 专注${durationText}，获得${reward.name} x1！`);
+    }
+    function exitFullscreenTimer() { if (!isFullscreenTimerActive) return; const elapsed = fullscreenStartSeconds - fullscreenSecondsLeft; if (elapsed > 0) addFocusRecord(elapsed); if (fullscreenTimerInterval) clearInterval(fullscreenTimerInterval); isFullscreenTimerActive = false; fullscreenOverlay.classList.remove('active'); }
+    function startFullscreenTimer(initialSeconds) { if (fullscreenTimerInterval) clearInterval(fullscreenTimerInterval); fullscreenStartSeconds = initialSeconds; fullscreenSecondsLeft = initialSeconds; fullscreenDisplay.innerText = formatTime(fullscreenSecondsLeft); fullscreenOverlay.classList.add('active'); isFullscreenTimerActive = true; fullscreenTimerInterval = setInterval(() => { if (fullscreenSecondsLeft <= 1) { clearInterval(fullscreenTimerInterval); fullscreenTimerInterval = null; isFullscreenTimerActive = false; fullscreenOverlay.classList.remove('active'); addFocusRecord(fullscreenStartSeconds); alert("🍅 番茄时间到！休息一下~"); } else { fullscreenSecondsLeft--; fullscreenDisplay.innerText = formatTime(fullscreenSecondsLeft); } }, 1000); }
+    if (fullscreenOverlay) { fullscreenOverlay.addEventListener('click', (e) => { if (e.target === fullscreenOverlay || e.target.classList.contains('timer-number')) exitFullscreenTimer(); }); document.querySelector('.fullscreen-timer .timer-close')?.addEventListener('click', (e) => { e.stopPropagation(); exitFullscreenTimer(); }); }
+    
+    // 数据管理
+    const STORAGE = { notes: 'work_notes_v2' };
+    let todos = [], notes = [], habits = [], currentCard = null;
+    let currentOpenPanel = null;
+    function getToday() { return new Date().toISOString().slice(0,10); }
+    
+    // 我们仅将备忘录保留在本地 localStorage 中，习惯和待办由后端接管
+    function saveAll() { 
+        localStorage.setItem(STORAGE.notes, JSON.stringify(notes)); 
+    }
+    
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    
+    // 异步加载服务器数据
+    async function loadInitialData() {
+        try {
+            const response = await fetch('/api/data');
+            const data = await response.json();
+            todos = data.todos || [];
+            habits = data.habits || [];
+            
+            // 备忘录暂时保留本地存储
+            const storedNotes = localStorage.getItem(STORAGE.notes); 
+            notes = storedNotes ? JSON.parse(storedNotes) : [];
+            
+            const storedFocus = localStorage.getItem(FOCUS_RECORDS_KEY); 
+            focusRecords = storedFocus ? JSON.parse(storedFocus) : [];
+            
+            updateFarmUI(); 
+            updateRewardDisplay();
+        } catch (error) {
+            console.error("加载数据失败:", error);
+            todos = []; habits = [];
+            updatePetMessage("🔌 连接不到服务器，数据加载失败啦...");
+        }
+    }
+    
+    // 关闭所有面板
+    function closeAllPanels() {
+        document.querySelectorAll('.fullscreen-module').forEach(p => p.classList.remove('active'));
+        if(currentCard) currentCard.remove();
+        currentCard = null;
+        currentOpenPanel = null;
+    }
+    
+    // 打开模块 - 支持再次点击相同按钮关闭
+    function openModule(m) {
+        const targetPid = m === 'todo' ? 'todoPanel' : m === 'notes' ? 'notePanel' : m === 'habits' ? 'habitPanel' : m === 'toolbox' ? 'toolboxPanel' : m === 'ai' ? 'aiPanel' : null;
+        if(targetPid && currentOpenPanel && currentOpenPanel.id === targetPid) {
+            closeAllPanels();
+            return;
+        }
+        closeAllPanels();
+        if(targetPid) {
+            const panel = document.getElementById(targetPid);
+            panel.classList.add('active');
+            currentOpenPanel = panel;
+            if(targetPid === 'todoPanel') renderTodosUI();
+            else if(targetPid === 'notePanel') renderNotesUI();
+            else if(targetPid === 'habitPanel') renderHabitsUI();
+            else if(targetPid === 'toolboxPanel') renderToolboxUI();
+            else if(targetPid === 'aiPanel') renderAI();
+        }
+    }
+    
+    // 点击页面空白处关闭面板
+    function setupGlobalClickToClose() {
+        document.addEventListener('click', function(e) {
+            if (currentOpenPanel && currentOpenPanel.classList.contains('active')) {
+                const isInsidePanel = currentOpenPanel.contains(e.target);
+                const isFuncBtn = e.target.closest('.func-btn');
+                const isAiCore = e.target.closest('.ai-core');
+                const isCloseBtn = e.target.closest('.return-core');
+                const isFloatingCard = e.target.closest('.floating-card');
+                const isCompanion = e.target.closest('.companion-area');
+                const isActivityCard = e.target.closest('.activity-card');
+                
+                if (isCloseBtn) return;
+                if (isFuncBtn || isAiCore) return;
+                if (isFloatingCard) return;
+                if (isCompanion || isActivityCard) return;
+                if (!isInsidePanel) {
+                    closeAllPanels();
+                }
+            }
+            if (currentCard && !currentCard.contains(e.target) && !e.target.closest('.func-btn')) {
+                currentCard.remove();
+                currentCard = null;
+            }
+        });
+    }
+    
+    // 渲染函数 - 待办
+    function renderTodosUI() {
+        const c = document.getElementById('todoListRender'); if(!c) return;
+        if(!todos.length) { c.innerHTML = '<div class="empty-elegant">✨ 轻触添加，规划今日</div>'; return; }
+        c.innerHTML = '';
+        todos.forEach(t => {
+            c.innerHTML += `<div class="todo-row"><div><input type="checkbox" data-id="${t.id}" ${t.completed ? 'checked' : ''}><span style="margin-left:10px; ${t.completed ? 'text-decoration:line-through;opacity:0.7' : ''}">${escapeHtml(t.text)}</span></div><button class="delete-todo-btn" data-id="${t.id}">🗑️</button></div>`;
+        });
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => { 
+            cb.onchange = async e => { 
+                const id = parseInt(e.target.dataset.id); 
+                const todo = todos.find(t => t.id === id); 
+                if(todo) { 
+                    todo.completed = e.target.checked; 
+                    // 发送到后端更新状态
+                    await fetch(`/api/todos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ completed: todo.completed })
+                    });
+                    renderTodosUI(); renderAI(); 
+                    if(todo.completed) { const reward = getRandomReward(); updatePetMessage(`🎉 完成任务！获得${reward.name} x1`); showRewardToast(`🎉 获得${reward.name}！`); } 
+                    else updatePetMessage("📋 任务标记未完成"); 
+                } 
+            }; 
+        });
+        
+        document.querySelectorAll('.delete-todo-btn').forEach(btn => { 
+            btn.onclick = async () => { 
+                const id = parseInt(btn.dataset.id);
+                await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+                todos = todos.filter(t => t.id !== id); 
+                renderTodosUI(); renderAI(); updatePetMessage("✅ 已删除待办"); 
+            }; 
+        });
+    }
+    
+    // 渲染函数 - 习惯
+    function renderHabitsUI() {
+        const c = document.getElementById('habitListRender'), s = document.getElementById('habitExtraStats'); if(!c) return;
+        const today = getToday();
+        if(!habits.length) { c.innerHTML = '<div class="empty-elegant">🏆 添加习惯，塑造更好的自己</div>'; if(s) s.innerText = ''; return; }
+        c.innerHTML = '';
+        habits.forEach(h => {
+            const isChecked = h.lastDate === today;
+            c.innerHTML += `<div class="habit-row"><div><span style="font-weight:600;">${escapeHtml(h.name)}</span><span class="habit-streak-badge">🔥 ${h.streak}天</span></div><div><button class="checkin-modern ${isChecked ? 'disabled' : ''}" data-id="${h.id}" ${isChecked ? 'disabled' : ''}>${isChecked ? '✅ 今日完成' : '✔️ 打卡'}</button><button class="delete-habit" data-id="${h.id}" style="margin-left:8px;">🗑️</button></div></div>`;
+        });
+        
+        document.querySelectorAll('.checkin-modern:not(.disabled)').forEach(btn => {
+            btn.onclick = async () => {
+                const id = parseInt(btn.dataset.id);
+                const habit = habits.find(h => h.id === id);
+                if(habit && habit.lastDate !== today) {
+                    // 发送到后端打卡
+                    const res = await fetch(`/api/habits/${id}/checkin`, { method: 'POST' });
+                    const data = await res.json();
+                    
+                    habit.streak += 1;
+                    habit.lastDate = data.date;
+                    
+                    const reward = getRandomReward();
+                    updatePetMessage(`🔥 ${habit.name}打卡成功！获得${reward.name} x1！`);
+                    showRewardToast(`🎉 打卡成功！获得${reward.name}`);
+                    renderHabitsUI();
+                    renderAI();
+                }
+            };
+        });
+        
+        document.querySelectorAll('.delete-habit').forEach(btn => {
+            btn.onclick = async () => { 
+                const id = parseInt(btn.dataset.id);
+                await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+                habits = habits.filter(h => h.id !== id); 
+                renderHabitsUI(); renderAI(); updatePetMessage("习惯已删除"); 
+            };
+        });
+        
+        const checkedToday = habits.filter(h => h.lastDate === today).length;
+        if(s) s.innerText = `今日打卡 ${checkedToday}/${habits.length} · 最长坚持 ${Math.max(...habits.map(h => h.streak), 0)}天`;
+    }
+    
+    function renderNotesUI() {
+        const c = document.getElementById('noteListRender'); if(!c) return;
+        if(!notes.length) { c.innerHTML = '<div class="empty-elegant">📭 写点什么，让记忆生根</div>'; return; }
+        c.innerHTML = notes.map(n => `<div class="note-card-item" data-id="${n.id}"><div class="note-card-title">${escapeHtml(n.title) || '无标题'}</div><div class="note-preview-meta"><span>📅 ${escapeHtml(n.createdAt)}</span>&nbsp;&nbsp;<span>📄 ${n.content.length}字</span></div><div class="note-preview-excerpt">${escapeHtml(n.content.slice(0,50))}${n.content.length > 50 ? '…' : ''}</div></div>`).join('');
+        document.querySelectorAll('.note-card-item').forEach(el => el.addEventListener('click', () => openNoteDetail(parseInt(el.dataset.id))));
+    }
+    
+    function renderToolboxUI() {
+        const container = document.getElementById('toolboxContainer'); if(!container) return;
+        const savedNote = localStorage.getItem("quickNoteText") || "", currentQuote = getCurrentQuote();
+        let recordsHtml = focusRecords.length === 0 ? '<div>✨ 还没有专注记录，开始第一次番茄钟吧</div>' : focusRecords.slice(0,5).map(r => `<div style="display:flex; justify-content:space-between; padding:4px 0;"><span>${escapeHtml(r.startTime)}</span><span>⏱️ ${escapeHtml(r.durationText)}</span></div>`).join('');
+        container.innerHTML = `<div class="toolbox-layout"><div class="toolbox-card"><h3>🍅 番茄倒计时</h3><div class="timer-number-large" id="toolboxTimerPreview">25:00</div><div><button class="time-btn" data-minutes="5">5分钟</button><button class="time-btn" data-minutes="25">25分钟</button><button class="time-btn" data-minutes="60">60分钟</button></div><button id="startFullscreenTimerBtn" class="btn-inline">开始田间专注</button></div><div class="toolbox-card"><h3>🌾 农谚格言</h3><div class="quote-text" id="quoteText">“${escapeHtml(currentQuote)}”</div><button id="newQuote" class="btn-inline">随机农谚</button></div><div class="toolbox-card"><h3>📌 我的便签</h3><div class="sticky-note-area"><textarea id="quickNote" rows="3" placeholder="记录灵感、待办或任何你想保存的碎片...">${escapeHtml(savedNote)}</textarea><button id="saveQuickNote" class="btn-inline" style="margin-top:8px;">保存便签</button></div></div><div class="focus-record"><strong>📊 专注记录</strong><br>${recordsHtml}</div></div>`;
+        let currentSec = 25*60; const preview = document.getElementById('toolboxTimerPreview'); const upd = () => { if(preview) preview.innerText = formatTime(currentSec); }; upd();
+        document.querySelectorAll('.time-btn').forEach(btn => { btn.onclick = () => { currentSec = parseInt(btn.dataset.minutes)*60; upd(); }; });
+        document.getElementById('startFullscreenTimerBtn')?.addEventListener('click', () => startFullscreenTimer(currentSec));
+        document.getElementById('newQuote')?.addEventListener('click', () => { const q = getRandomQuoteLib(); document.getElementById('quoteText').innerText = `“${q}”`; saveCurrentQuote(q); updatePetMessage(`📜 新农谚：${q}`); });
+        document.getElementById('saveQuickNote')?.addEventListener('click', () => { const ta = document.getElementById('quickNote'); if(ta) localStorage.setItem("quickNoteText", ta.value); alert("便签已保存"); updatePetMessage("📝 灵感保存成功！"); });
+    }
+    
+    // 渲染函数 - 智析
+    async function renderAI() {
+        const c = document.getElementById('aiAdviceBlock'), s = document.getElementById('aiStatsBlock'); if(!c) return;
+        
+        // 1. 显示加载状态
+        c.innerHTML = `<div><strong>🧠 智析督促</strong><br>✨ 正在呼唤田园仙子查看你的记录...</div>`;
+        
+        try {
+            // 2. 向 Flask 后端请求规则 AI 的诊断结果
+            const response = await fetch('/api/ai_advice');
+            const data = await response.json();
+            
+            let adviceHtml = "";
+            if (data.interventions && data.interventions.length > 0) {
+                // 如果后端返回了拖延警告，渲染出来
+                data.interventions.forEach(item => {
+                    // 逾期任务标红，习惯提醒用温暖的棕色
+                    let color = item.type === 'todo_overdue' ? '#dc2626' : '#b97f44';
+                    adviceHtml += `<div style="margin-bottom:10px; color:${color}; font-weight:500;">🐾 ${item.message}</div>`;
+                });
+            } else {
+                adviceHtml = "✨ 状态极佳，继续保持节奏！没有发现拖延迹象哦。";
+            }
+            
+            c.innerHTML = `<div><strong>🧠 智析督促</strong><br><br>${adviceHtml}</div>`;
+            
+        } catch (error) {
+            console.error("无法连接到后端:", error);
+            c.innerHTML = `<div><strong>🧠 智析督促</strong><br>🔌 似乎与小院失去了连接，请检查 Flask 服务器是否运行。</div>`;
+        }
+
+        // 3. 农场和待办的基础数据统计（保持原有逻辑）
+        const total = todos.length, completed = todos.filter(t => t.completed).length, rate = total === 0 ? 100 : Math.round(completed / total * 100);
+        s.innerHTML = `<br><strong>📈 核心指标</strong><br>✅ 当前待办完成率 ${rate}% (${completed}/${total})<br>🌻 花儿水量 ${flowerHydration}% · 🐑 小羊饱腹 ${sheepFullness}% · 🐰 兔子饱腹 ${rabbitFullness}%<br>💧水:${waterCount} 🥕胡萝卜:${carrotCount} 🌿草:${grassCount}`;
+    }
+    
+    let currentEditingNoteId = null;
+    function openNoteDetail(id) { const note = notes.find(n => n.id === id); if(!note) return; currentEditingNoteId = id; document.getElementById('detailTitle').value = note.title || ''; document.getElementById('detailContent').value = note.content || ''; document.getElementById('detailWordCount').innerHTML = `📄 ${note.content.length}字`; document.getElementById('detailTime').innerHTML = `📅 ${escapeHtml(note.createdAt || '')}`; document.getElementById('noteDetailModal').style.visibility = 'visible'; document.getElementById('noteDetailModal').style.opacity = '1'; }
+    function closeDetailModal() { document.getElementById('noteDetailModal').style.visibility = 'hidden'; document.getElementById('noteDetailModal').style.opacity = '0'; currentEditingNoteId = null; }
+    function saveCurrentNote() { if(currentEditingNoteId === null) return; const idx = notes.findIndex(n => n.id === currentEditingNoteId); if(idx !== -1) { notes[idx].title = document.getElementById('detailTitle').value.trim() || '无标题'; notes[idx].content = document.getElementById('detailContent').value; saveAll(); renderNotesUI(); updatePetMessage("📘 备忘录已更新~"); } closeDetailModal(); }
+    function deleteCurrentNote() { if(currentEditingNoteId === null) return; if(confirm('删除这条备忘录？')) { notes = notes.filter(n => n.id !== currentEditingNoteId); saveAll(); renderNotesUI(); closeDetailModal(); updatePetMessage("🗑️ 备忘录已删除"); } }
+    function addNewNote() { const newId = Date.now(); notes.unshift({ id: newId, title: "", content: "", createdAt: new Date().toLocaleString() }); saveAll(); renderNotesUI(); openNoteDetail(newId); }
+    
+    // 后端新增待办
+    async function addTodoItem() { 
+        const v = document.getElementById('todoInputField')?.value.trim(); 
+        if(v) { 
+            const res = await fetch('/api/todos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: v })
+            });
+            const newTodo = await res.json();
+            todos.unshift(newTodo); // 加到列表最前面
+            renderTodosUI(); 
+            renderAI(); 
+            document.getElementById('todoInputField').value = ''; 
+            updatePetMessage(`📌 新增待办: ${v.slice(0,15)}`); 
+        } 
+    }
+    
+    // 后端新增习惯
+    async function addHabitItem() { 
+        const n = document.getElementById('habitInputField')?.value.trim(); 
+        if(n) { 
+            const res = await fetch('/api/habits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: n })
+            });
+            const newHabit = await res.json();
+            habits.push(newHabit); 
+            renderHabitsUI(); 
+            renderAI(); 
+            document.getElementById('habitInputField').value = ''; 
+            updatePetMessage(`🌟 新习惯: ${n}，坚持就是胜利！`); 
+        } 
+    }
+    
+    // 增强卡片：支持再次点击关闭
+    function showCard(m, btn) { 
+        if (currentCard && currentCard._triggerButton === btn) {
+            currentCard.remove();
+            currentCard = null;
+            return;
+        }
+        if(currentCard) currentCard.remove();
+        const card = document.createElement('div'); 
+        card.className = 'floating-card'; 
+        let content = '';
+        if(m === 'todo') content = `📋 待办 ${todos.filter(t => !t.completed).length}项未完成`;
+        else if(m === 'notes') content = `📝 备忘录 ${notes.length}条`;
+        else if(m === 'habits') content = `🔥 习惯 ${habits.length}个`;
+        else if(m === 'toolbox') content = '🍅 番茄/格言/便签';
+        card.innerHTML = `<div style="font-weight:bold; margin-bottom:8px;">✨ 快捷预览</div><div>${content}</div><div style="margin-top:8px;">🐾 点击展开完整管理</div>`; 
+        document.body.appendChild(card); 
+        const rect = btn.getBoundingClientRect(); 
+        const cardWidth = card.offsetWidth;
+        if (m === 'toolbox') {
+            let leftPos = rect.left - cardWidth - 12;
+            if (leftPos < 10) leftPos = rect.right + 12;
+            card.style.left = `${leftPos}px`;
+        } else {
+            let leftPos = rect.right + 12;
+            if (leftPos + cardWidth > window.innerWidth) leftPos = rect.left - cardWidth - 12;
+            card.style.left = `${leftPos}px`;
+        }
+        card.style.top = `${rect.top}px`; 
+        if(parseInt(card.style.top) + card.offsetHeight > window.innerHeight) card.style.top = `${window.innerHeight - card.offsetHeight - 10}px`;
+        card._triggerButton = btn;
+        currentCard = card; 
+        card.onclick = () => { openModule(m); card.remove(); currentCard = null; }; 
+    }
+    
+    function updateDateTime() {
+        const now = new Date();
+        const year = now.getFullYear(), month = now.getMonth() + 1, day = now.getDate(), hours = now.getHours(), minutes = now.getMinutes().toString().padStart(2, '0');
+        let timeStr = "", isNight = false, showRainbow = false;
+        if(hours >= 5 && hours < 7) timeStr = "🌅 清晨";
+        else if(hours >= 7 && hours < 11) timeStr = "🌞 上午";
+        else if(hours >= 11 && hours < 13) timeStr = "☀️ 午时";
+        else if(hours >= 13 && hours < 17) timeStr = "🌾 午后";
+        else if(hours >= 17 && hours < 19) timeStr = "🌇 黄昏";
+        else if(hours >= 19 && hours < 21) timeStr = "🌙 夜晚";
+        else { timeStr = "🌌 深夜"; isNight = true; }
+        if(hours >= 21 || hours < 5) isNight = true;
+        if(hours >= 6 && hours <= 9 && !isNight) showRainbow = true;
+        document.getElementById('datetimeDisplay').innerHTML = `${timeStr} ${year}.${month}.${day} ${hours}:${minutes}`;
+        if(isNight) { document.body.classList.add('night'); document.getElementById('sunMoonIcon').innerHTML = "🌙✨"; document.getElementById('rainbowIcon').style.opacity = "0"; }
+        else { document.body.classList.remove('night'); document.getElementById('sunMoonIcon').innerHTML = "🌞☀️"; document.getElementById('rainbowIcon').style.opacity = showRainbow ? "0.8" : "0"; }
+        const starsContainer = document.getElementById('starsContainer');
+        if(isNight && starsContainer.children.length < 35) {
+            starsContainer.innerHTML = '';
+            for(let i=0;i<45;i++) { const star = document.createElement('div'); star.className = 'star'; star.innerHTML = ['⭐','✨','🌟','💫'][Math.floor(Math.random()*4)]; star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 70 + '%'; star.style.fontSize = (Math.random() * 1 + 0.5) + 'rem'; star.style.animationDelay = Math.random() * 3 + 's'; starsContainer.appendChild(star); }
+        } else if(!isNight) { starsContainer.innerHTML = ''; }
+    }
+    setInterval(updateDateTime, 1000);
+    
+    function bindEvents() {
+        document.querySelectorAll('.func-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); const mod = btn.dataset.module; if(mod) showCard(mod, btn); }); });
+        document.getElementById('aiCoreBtn')?.addEventListener('click', (e) => { e.stopPropagation(); openModule('ai'); });
+        document.getElementById('waterFlowerBtn')?.addEventListener('click', waterFlower);
+        document.getElementById('feedSheepBtn')?.addEventListener('click', feedSheep);
+        document.getElementById('feedRabbitBtn')?.addEventListener('click', feedRabbit);
+        document.querySelectorAll('.close-panel, .return-core').forEach(btn => btn.addEventListener('click', closeAllPanels));
+    }
+    
+    function showApp() {
+        if(decayInterval) clearInterval(decayInterval);
+        decayInterval = setInterval(hourlyDecay, 3600000);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appDashboard').style.display = 'block';
+        document.getElementById('userNameDisplay').innerHTML = `🧑‍🌾 ${document.getElementById('loginUsername').value.trim() || '小农夫'}`;
+        loadInitialData();
+        bindEvents();
+        setupGlobalClickToClose();
+        renderTodosUI();
+        renderNotesUI();
+        renderHabitsUI();
+        renderToolboxUI();
+        renderAI();
+        updateDateTime();
+        updateFarmUI();
+        updateRewardDisplay();
+        updatePetMessage("🐑 咩~完成任务获得随机奖励，点击空白处或再次点击按钮可关闭面板哦！");
+    }
+    
+    function logout() {
+        if(decayInterval) { clearInterval(decayInterval); decayInterval = null; }
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appDashboard').style.display = 'none';
+        closeAllPanels();
+        if(fullscreenTimerInterval) { clearInterval(fullscreenTimerInterval); fullscreenTimerInterval = null; }
+        if(fullscreenOverlay) fullscreenOverlay.classList.remove('active');
+        const quoteList = ["Life is not a rehearsal.", "我的一生都属于白夜，一直都很明亮。", "还能走得更远，更坚强，更幸福。", "去光荣地受伤，去勇敢地痊愈自己。", "正因为有能力跨越，这个考验才会降临。", "三分钟热度就会有三分钟收获。"];
+        document.getElementById('inspireQuoteOuter').innerHTML = `✨ “${quoteList[Math.floor(Math.random() * quoteList.length)]}” ✨`;
+    }
+    
+    document.getElementById('addTodoAction')?.addEventListener('click', addTodoItem);
+    document.getElementById('addHabitAction')?.addEventListener('click', addHabitItem);
+    document.getElementById('doLoginBtn')?.addEventListener('click', showApp);
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    document.getElementById('fabAddNote')?.addEventListener('click', addNewNote);
+    document.getElementById('saveDetailBtn')?.addEventListener('click', saveCurrentNote);
+    document.getElementById('cancelDetailBtn')?.addEventListener('click', closeDetailModal);
+    document.getElementById('deleteNoteBtn')?.addEventListener('click', deleteCurrentNote);
+    
+    window.onload = () => { 
+        document.getElementById('loginScreen').style.display = 'flex'; 
+        document.getElementById('appDashboard').style.display = 'none';
+        const quoteList = ["Life is not a rehearsal.", "我的一生都属于白夜，一直都很明亮。", "还能走得更远，更坚强，更幸福。", "去光荣地受伤，去勇敢地痊愈自己。", "正因为有能力跨越，这个考验才会降临。", "三分钟热度就会有三分钟收获。"];
+        document.getElementById('inspireQuoteOuter').innerHTML = `✨ “${quoteList[Math.floor(Math.random() * quoteList.length)]}” ✨`;
+    };
+</script>
+</body>
+</html>
